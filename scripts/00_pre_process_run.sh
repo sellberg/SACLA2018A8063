@@ -9,7 +9,8 @@ then
 elif [ $# -eq 1 ];
 then
     RUNNUMBER=$1
-    WORKDIR="/UserData/fperakis/2016_10/"
+    CONFFILE="/home/fperakis/conf/RunData_Effective_Event_Info.conf"
+    WORKDIR="/UserData/fperakis/2018_6/"
     SRCDIR=$WORKDIR"codes/"
     TAGDIR=$SRCDIR"tags/"
     LOGDIR=$SRCDIR"logs/"
@@ -55,7 +56,11 @@ then
     echo "MakeTagList -b 3 -r "$RUNNUMBER" -det 'MPCCD-8-2-002' -inp "$SRCDIR"xrays_off_condition_list.txt -out "$TAGDIR"/tag_"$RUNNUMBER"_dark.list" >> $JOB
     
     echo "echo 'Converting run"$RUNNUMBER"...'" >> $JOB
-    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+    if test -e $CONFFILE; then
+	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+    else
+	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+    fi
     
     echo "echo 'Converting background shots'" >> $JOB
     echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER"_dark.list -dir "$RUNDIR" -o "$RUNNUMBER"_dark.h5 > "$LOGDIR"/log_"$RUNNUMBER"_dark" >> $JOB
@@ -64,7 +69,11 @@ then
     echo "ImgAvg -inp "$RUNDIR/$RUNNUMBER"_dark.h5 -out "$RUNDIR/$RUNNUMBER"_dark_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_dark_avg" >> $JOB
     
     echo "echo 'Converting BG-subtracted run"$RUNNUMBER"...'" >> $JOB
-    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$RUNDIR/$RUNNUMBER"_dark_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
+    if test -e $CONFFILE; then
+	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$RUNDIR/$RUNNUMBER"_dark_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
+    else
+	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$RUNDIR/$RUNNUMBER"_dark_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
+    fi
     
     qsub $JOB
     
@@ -89,7 +98,8 @@ else
         eval RUNNUMBER=\${$j}
         ((j=2*i))
         eval BGNUMBER=\${$j}
-	WORKDIR="/UserData/fperakis/2016_10/"
+	CONFFILE="/home/fperakis/conf/RunData_Effective_Event_Info.conf"
+	WORKDIR="/UserData/fperakis/2018_6/"
 	SRCDIR=$WORKDIR"codes/"
 	TAGDIR=$SRCDIR"tags/"
 	LOGDIR=$SRCDIR"logs/"
@@ -139,6 +149,13 @@ else
 	echo "echo 'Making tag lists...'" >> $JOB
 	#echo "MakeTagList -b 3 -r "$RUNNUMBER" -det 'MPCCD-8-2-002' -out "$TAGDIR"/tag_"$RUNNUMBER.list >> $JOB
 	echo "MakeTagList -b 3 -r "$RUNNUMBER" -det 'MPCCD-8-2-002' -inp "$SRCDIR"xrays_on_condition_list.txt -out "$TAGDIR"/tag_"$RUNNUMBER.list >> $JOB
+	echo "echo 'Converting run"$RUNNUMBER"...'" >> $JOB
+#	if test -e $CONFFILE; then
+#	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+#	else
+#	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+#	fi
+	
 	if test ! -e $BGDIR/$BGNUMBER'_avg.h5'; then
 	    echo "MakeTagList -b 3 -r "$BGNUMBER" -det 'MPCCD-8-2-002' -out "$TAGDIR"/tag_"$BGNUMBER.list >> $JOB
 
@@ -148,11 +165,16 @@ else
 	    echo "echo 'Averaging background run"$BGNUMBER"...'" >> $JOB
 	    echo "ImgAvg -inp "$BGDIR"/"$BGNUMBER".h5 -out "$BGDIR"/"$BGNUMBER"_avg.h5 > "$LOGDIR"/log_"$BGNUMBER"_avg" >> $JOB
 	fi
+	
 	echo "echo 'Converting BG-subtracted run"$RUNNUMBER"...'" >> $JOB
-	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$BGDIR"/"$BGNUMBER"_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
-
+	if test -e $CONFFILE; then
+	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$BGDIR"/"$BGNUMBER"_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
+	else
+	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$BGDIR"/"$BGNUMBER"_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
+	fi
+	
 	qsub $JOB
-    
+	
 	#echo 'Making tag lists...'
 	##MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -out $TAGDIR/tag_$RUNNUMBER.list
 	#MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -inp xrays_on_condition_list.txt -out $TAGDIR/tag_$RUNNUMBER.list

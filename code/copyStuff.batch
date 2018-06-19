@@ -1,0 +1,2 @@
+#PBS -N copy
+tar -xvf  /UserData/fperakis/copied_from_work

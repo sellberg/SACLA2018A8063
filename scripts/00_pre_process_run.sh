@@ -57,9 +57,9 @@ then
     
     echo "echo 'Converting run"$RUNNUMBER"...'" >> $JOB
     if test -e $CONFFILE; then
-	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+    	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
     else
-	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
+    	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
     fi
     
     echo "echo 'Converting background shots'" >> $JOB
@@ -74,24 +74,12 @@ then
     else
 	echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$RUNDIR/$RUNNUMBER"_dark_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
     fi
-    
-    qsub $JOB
-    
-    #echo 'Making tag lists...'
-    #MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -inp xrays_on_condition_list.txt -out $TAGDIR/tag_$RUNNUMBER.list
-    #MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -inp xrays_off_condition_list.txt -out $TAGDIR/tag_$RUNNUMBER'_dark.list'
-    #
-    #echo 'Converting background shots'
-    #DataConvert4 -l $TAGDIR/tag_$RUNNUMBER'_dark.list' -dir $RUNDIR -o $RUNNUMBER'_dark.h5' > $LOGDIR/log_$RUNNUMBER'_dark'
-    #
-    #echo 'Averaging background shots'
-    #ImgAvg -inp $RUNDIR/$RUNNUMBER'_dark.h5' -out $RUNDIR/$RUNNUMBER'_dark_avg.h5' > $LOGDIR/log_$RUNNUMBER'_dark_avg'
-    #
-    #echo 'Converting BG-subtracted run'$RUNNUMBER'...'
-    #DataConvert4 -l $TAGDIR/tag_$RUNNUMBER.list -dir $RUNDIR -o $RUNNUMBER'_corrected.h5' -bkg $RUNDIR/$RUNNUMBER'_dark_avg.h5' > $LOGDIR/log_$RUNNUMBER'_corrected'
-    
+    echo "echo 'Done!'" >> $JOB
+
+    OUT=`qsub $JOB`
+    echo "Submitted: "$OUT
+
     cd $CURRDIR
-    echo 'Done!'
 else
     for (( i=1; i<=$#/2; i++ )); do
         ((j=2*i-1))
@@ -149,7 +137,7 @@ else
 	echo "echo 'Making tag lists...'" >> $JOB
 	#echo "MakeTagList -b 3 -r "$RUNNUMBER" -det 'MPCCD-8-2-002' -out "$TAGDIR"/tag_"$RUNNUMBER.list >> $JOB
 	echo "MakeTagList -b 3 -r "$RUNNUMBER" -det 'MPCCD-8-2-002' -inp "$SRCDIR"xrays_on_condition_list.txt -out "$TAGDIR"/tag_"$RUNNUMBER.list >> $JOB
-	echo "echo 'Converting run"$RUNNUMBER"...'" >> $JOB
+#	echo "echo 'Converting run"$RUNNUMBER"...'" >> $JOB
 #	if test -e $CONFFILE; then
 #	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -f "$CONFFILE" -dir "$RUNDIR" -o "$RUNNUMBER".h5 > "$LOGDIR"/log_"$RUNNUMBER >> $JOB
 #	else
@@ -172,25 +160,11 @@ else
 	else
 	    echo "DataConvert4 -l "$TAGDIR"/tag_"$RUNNUMBER".list -dir "$RUNDIR" -o "$RUNNUMBER"_corrected.h5 -bkg "$BGDIR"/"$BGNUMBER"_avg.h5 > "$LOGDIR"/log_"$RUNNUMBER"_corrected" >> $JOB
 	fi
+	echo "echo 'Done!'" >> $JOB
 	
-	qsub $JOB
-	
-	#echo 'Making tag lists...'
-	##MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -out $TAGDIR/tag_$RUNNUMBER.list
-	#MakeTagList -b 3 -r $RUNNUMBER -det 'MPCCD-8-2-002' -inp xrays_on_condition_list.txt -out $TAGDIR/tag_$RUNNUMBER.list
-	#if test ! -e $BGDIR/$BGNUMBER'_avg.h5'; then
-	#    MakeTagList -b 3 -r $BGNUMBER -det 'MPCCD-8-2-002' -out $TAGDIR/tag_$BGNUMBER.list
-	#
-	#    echo 'Converting background run'$BGNUMBER'...'
-	#    DataConvert4 -l $TAGDIR/tag_$BGNUMBER.list -dir $BGDIR -o $BGNUMBER.h5 > $LOGDIR/log_$BGNUMBER
-	#
-	#    echo 'Averaging background run'$BGNUMBER'...'
-	#    ImgAvg -inp $BGDIR/$BGNUMBER.h5 -out $BGDIR/$BGNUMBER'_avg.h5' > $LOGDIR/log_$BGNUMBER'_avg'
-	#fi
-	#echo 'Converting BG-subtracted run'$RUNNUMBER'...'
-	#DataConvert4 -l $TAGDIR/tag_$RUNNUMBER.list -dir $RUNDIR -o $RUNNUMBER'_corrected.h5' -bkg $BGDIR/$BGNUMBER'_avg.h5' > $LOGDIR/log_$RUNNUMBER'_corrected'
+        OUT=`qsub $JOB`
+        echo "Submitted: "$OUT
 	
         cd $CURRDIR
-	echo 'Done!'
     done
 fi
